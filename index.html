@@ -1,3 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RifasGana.com - Gran Rifa Benéfica</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #0f172a; color: #f8fafc; }
+    </style>
+</head>
+<body class="min-h-screen pb-12">
+
+    <!-- Barra de Navegación Superior -->
+    <nav class="bg-slate-900 border-b border-slate-800 py-3 px-4 sticky top-0 z-50 shadow-md">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="bg-emerald-500 text-slate-900 p-2 rounded-lg font-bold text-lg shadow">
+                    <i class="fa-solid fa-ticket"></i>
+                </div>
+                <span class="text-xl font-extrabold tracking-tight text-white">Rifas<span class="text-emerald-400">Gana</span>.com</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow flex items-center gap-1">
+                    <i class="fa-solid fa-fire text-yellow-300"></i> Rifa Activa
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-xl mx-auto px-4 mt-6 space-y-6">
+
+        <!-- Tarjeta Principal del Sorteo -->
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl relative overflow-hidden">
+            <div class="inline-block bg-emerald-950 border border-emerald-800 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full mb-3">
+                <i class="fa-regular fa-clock"></i> ¡SORTEO BENÉFICO! - Apoyo al Bebé
+            </div>
+            
+            <h1 class="text-3xl font-extrabold text-white tracking-tight mb-2">
+                Gran Rifa Especial <span class="text-emerald-400">$50 USD en Efectivo</span>
+            </h1>
+            
+            <p class="text-slate-400 text-sm mb-6 leading-relaxed">
+                Participa por un premio de <strong class="text-white">$50 USD en billete físico</strong>. Todo lo recaudado va destinado a cubrir los gastos y beneficios de un bebé de 3 meses. ¡Colabora y gana!
+            </p>
+
+            <!-- Bloques de Precio y Premio -->
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="bg-slate-800/80 border border-slate-700/60 p-4 rounded-2xl">
+                    <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Valor del Boleto</p>
+                    <p class="text-2xl font-extrabold text-emerald-400 mt-1">2.000 Bs</p>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Por cada número</p>
+                </div>
+                <div class="bg-slate-800/80 border border-slate-700/60 p-4 rounded-2xl">
+                    <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Premio Único</p>
+                    <p class="text-2xl font-extrabold text-yellow-400 mt-1">$50 USD</p>
+                    <p class="text-[10px] text-slate-400 mt-0.5">En efectivo físico</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Datos de Pago Móvil -->
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
+            <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-mobile-screen-button text-emerald-400"></i> Datos de Pago Móvil
+            </h2>
+
+            <div class="space-y-3">
+                <!-- Banco de Venezuela -->
+                <div class="bg-slate-800/60 border border-slate-700 p-4 rounded-2xl">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-white text-sm">Banco de Venezuela (0102)</span>
+                        <span class="bg-blue-900 text-blue-200 text-xs px-2 py-0.5 rounded font-semibold">BDV</span>
+                    </div>
+                    <p class="text-xs text-slate-300">C.I.: <span class="text-white font-semibold">28.308.252</span></p>
+                    <p class="text-xs text-slate-300">Teléfono: <span class="text-white font-semibold">0426-2884841</span></p>
+                </div>
+
+                <!-- BNC -->
+                <div class="bg-slate-800/60 border border-slate-700 p-4 rounded-2xl">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-bold text-white text-sm">Banco Nacional de Crédito (0191)</span>
+                        <span class="bg-emerald-900 text-emerald-200 text-xs px-2 py-0.5 rounded font-semibold">BNC</span>
+                    </div>
+                    <p class="text-xs text-slate-300">C.I.: <span class="text-white font-semibold">28.308.252</span></p>
+                    <p class="text-xs text-slate-300">Teléfono: <span class="text-white font-semibold">0426-2882841</span></p>
+                </div>
+            </div>
+
+            <div class="mt-4 p-3 bg-slate-800/90 border border-slate-700 rounded-xl text-xs text-slate-300 flex items-start gap-2">
+                <i class="fa-solid fa-circle-info text-emerald-400 mt-0.5"></i>
+                <p>Realiza tu pago de 2.000 Bs por boleto y haz clic en el botón de abajo para reportarlo y apartar tus números.</p>
+            </div>
+
+            <div class="mt-5">
+                <a href="https://wa.me/584262884841?text=Hola,%20realicé%20un%20pago%20móvil%20de%202000%20Bs%20para%20la%20rifa%20del%20bebé" target="_blank" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3.5 px-4 rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-sm">
+                    <i class="fa-brands fa-whatsapp text-lg"></i> Confirmar Pago por WhatsApp
+                </a>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="text-center text-xs text-slate-500 mt-10">
+        <p>© 2026 RifasGana.com - Todos los derechos reservados.</p>
+    </footer>
+
+</body>
+</html>
 ```html
 <!DOCTYPE html>
 <html lang="es">
