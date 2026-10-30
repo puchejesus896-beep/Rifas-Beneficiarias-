@@ -1,4 +1,677 @@
+```html
 <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorteo $50 en Efectivo | Rifa Express Venezuela</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            emerald: '#059669',
+                            darkemerald: '#064e3b',
+                            gold: '#f59e0b',
+                            amber: '#d97706',
+                            navy: '#0f172a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .number-btn {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            user-select: none;
+        }
+        .number-btn:hover:not(.sold):not(.selected) {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+        /* Estado Tachado/Vendido */
+        .sold {
+            background-color: #ef4444 !important;
+            color: #ffffff !important;
+            border-color: #b91c1c !important;
+            cursor: not-allowed;
+            opacity: 0.85;
+            box-shadow: none !important;
+        }
+        .sold::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -10%;
+            width: 120%;
+            height: 3px;
+            background-color: #7f1d1d;
+            transform: rotate(-30deg);
+            box-shadow: 0 0 3px rgba(0,0,0,0.5);
+        }
+        /* Estado Seleccionado */
+        .selected {
+            background-color: #f59e0b !important;
+            color: #ffffff !important;
+            border-color: #b45309 !important;
+            transform: scale(1.08);
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.6) !important;
+            z-index: 20;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.25s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col justify-between selection:bg-amber-400 selection:text-slate-900">
+
+    <!-- Toast de Notificaciones -->
+    <div id="toast" class="fixed top-5 right-5 z-50 bg-emerald-500 text-white font-bold px-4 py-3 rounded-xl shadow-2xl transition-all duration-300 opacity-0 pointer-events-none flex items-center gap-2">
+        <i class="fa-solid fa-circle-check text-lg"></i>
+        <span id="toast-message">Texto copiado</span>
+    </div>
+
+    <!-- Encabezado Principal -->
+    <header class="bg-slate-950 border-b border-slate-800 sticky top-0 z-40 shadow-xl">
+        <div class="max-w-6xl mx-auto px-4 py-3.5 flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center gap-3">
+                <div class="bg-gradient-to-tr from-amber-500 to-emerald-500 text-slate-900 p-2.5 rounded-xl shadow-lg font-black text-xl flex items-center justify-center">
+                    <i class="fa-solid fa-money-bill-wave text-slate-950"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black tracking-tight text-white flex items-center gap-2">
+                        Gran Sorteo Express <span class="bg-emerald-500/20 text-emerald-400 text-xs px-2.5 py-0.5 rounded-full border border-emerald-500/40 font-bold">🇻🇪 Venezuela</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Selecciona tu número y confirma por WhatsApp</p>
+                </div>
+            </div>
+
+            <!-- Navegación Cliente / Administración -->
+            <div class="flex items-center bg-slate-900 p-1 rounded-xl border border-slate-800">
+                <button id="tab-client-btn" onclick="switchTab('client')" class="px-4 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-200 bg-amber-500 text-slate-950 shadow-md">
+                    <i class="fa-solid fa-ticket mr-1"></i> Comprar Boletos
+                </button>
+                <button id="tab-admin-btn" onclick="switchTab('admin')" class="px-4 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-200 text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-user-gear mr-1"></i> Panel Admin
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="max-w-6xl mx-auto px-4 py-6 w-full flex-grow">
+
+        <!-- ================= VISTA CLIENTE ================= -->
+        <div id="tab-client" class="tab-content active">
+            
+            <!-- Banner del Premio -->
+            <div class="bg-gradient-to-r from-emerald-950 via-slate-900 to-amber-950 border border-emerald-500/30 rounded-3xl p-6 mb-6 shadow-2xl relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
+                    <i class="fa-solid fa-dollar-sign text-[180px] text-emerald-400"></i>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center relative z-10">
+                    <div class="lg:col-span-7 space-y-3">
+                        <div class="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                            <span>Sorteo Activo • Táchalo Ahora</span>
+                        </div>
+                        
+                        <h2 class="text-3xl sm:text-4xl font-black text-white tracking-tight leading-tight">
+                            PREMIO: <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-emerald-400">50$ EN EFECTIVO</span> 💵
+                        </h2>
+                        
+                        <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                            Elige tus números de la suerte del <strong class="text-white">00 al 99</strong>. Cada número tiene un costo de solo <strong class="text-emerald-400">2.000 Bs</strong>. Al presionar el número y confirmar tus datos, se tachará automáticamente.
+                        </p>
+
+                        <div class="flex flex-wrap gap-3 pt-1">
+                            <div class="bg-slate-950/80 border border-slate-800 px-4 py-2.5 rounded-2xl flex items-center gap-3">
+                                <i class="fa-solid fa-tag text-amber-400 text-lg"></i>
+                                <div>
+                                    <p class="text-[10px] text-slate-400 uppercase font-bold">Valor por Ticket</p>
+                                    <p class="text-lg font-black text-emerald-400">2.000 Bs.</p>
+                                </div>
+                            </div>
+                            <div class="bg-slate-950/80 border border-slate-800 px-4 py-2.5 rounded-2xl flex items-center gap-3">
+                                <i class="fa-solid fa-trophy text-amber-400 text-lg"></i>
+                                <div>
+                                    <p class="text-[10px] text-slate-400 uppercase font-bold">Premio Único</p>
+                                    <p class="text-lg font-black text-amber-400">$50 USD (Efectivo)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjetas de Pago Móvil Disponibles -->
+                    <div class="lg:col-span-5 space-y-3">
+                        <h3 class="text-xs font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                            <i class="fa-solid fa-building-columns text-emerald-400"></i> Métodos de Pago Móvil Oficiales
+                        </h3>
+
+                        <!-- Datos BDV -->
+                        <div class="bg-slate-950/90 border border-slate-800 p-3.5 rounded-2xl hover:border-slate-700 transition">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <span class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-university"></i> 0102 - Banco de Venezuela (VNZ)
+                                </span>
+                                <button onclick="copyPaymentData('BDV')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded-lg font-bold transition flex items-center gap-1">
+                                    <i class="fa-regular fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-2 gap-1 text-xs text-slate-300 font-mono">
+                                <p><span class="text-slate-500 font-sans">C.I.:</span> V-28308252</p>
+                                <p><span class="text-slate-500 font-sans">Telf:</span> 04262884841</p>
+                            </div>
+                        </div>
+
+                        <!-- Datos BNC -->
+                        <div class="bg-slate-950/90 border border-slate-800 p-3.5 rounded-2xl hover:border-slate-700 transition">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <span class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-building"></i> 0191 - Banco Nacional de Crédito (BNC)
+                                </span>
+                                <button onclick="copyPaymentData('BNC')" class="text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded-lg font-bold transition flex items-center gap-1">
+                                    <i class="fa-regular fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-2 gap-1 text-xs text-slate-300 font-mono">
+                                <p><span class="text-slate-500 font-sans">C.I.:</span> V-28308252</p>
+                                <p><span class="text-slate-500 font-sans">Telf:</span> 04262884841</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leyenda y Contador -->
+            <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl mb-6 flex flex-wrap justify-between items-center gap-4 shadow-lg">
+                <div class="flex flex-wrap items-center gap-4 text-xs font-bold">
+                    <div class="flex items-center gap-2">
+                        <span class="w-4 h-4 rounded-lg bg-slate-800 border border-slate-700 inline-block"></span>
+                        <span class="text-slate-300">Disponible</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-4 h-4 rounded-lg bg-amber-500 inline-block"></span>
+                        <span class="text-slate-300">Seleccionado</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-4 h-4 rounded-lg bg-red-600 relative overflow-hidden inline-block after:absolute after:top-1/2 after:left-0 after:w-full after:h-0.5 after:bg-slate-950 after:-rotate-45"></span>
+                        <span class="text-slate-300">Tachado (Vendido)</span>
+                    </div>
+                </div>
+
+                <div class="text-xs font-bold text-slate-400">
+                    Disponibles: <span id="count-free" class="text-emerald-400 font-extrabold text-sm">100</span> / 100
+                </div>
+            </div>
+
+            <!-- Cuadrícula Interactiva -->
+            <div class="bg-slate-950 border border-slate-800 p-5 sm:p-6 rounded-3xl shadow-xl mb-8">
+                <h3 class="text-sm font-extrabold text-slate-200 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-pointer text-amber-400"></i> Selecciona uno o varios números para apartar:
+                </h3>
+
+                <!-- Grid 00 - 99 -->
+                <div id="numbers-grid" class="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-10 gap-2.5 sm:gap-3">
+                    <!-- Botones dinámicos JS -->
+                </div>
+            </div>
+
+            <!-- Formulario Flotante o Final al elegir un número -->
+            <div id="checkout-panel" class="bg-slate-950 border-2 border-emerald-500/50 p-6 rounded-3xl shadow-2xl space-y-4 transition-all duration-300">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <h3 class="font-extrabold text-base text-white flex items-center gap-2">
+                        <i class="fa-solid fa-cart-shopping text-emerald-400"></i> Confirmación de Reserva
+                    </h3>
+                    <span id="selected-numbers-badge" class="bg-amber-500 text-slate-950 px-3 py-1 rounded-xl font-black text-sm">
+                        Ningún número seleccionado
+                    </span>
+                </div>
+
+                <form id="purchase-form" onsubmit="processPurchase(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1.5">Tu Nombre y Apellido *</label>
+                            <input type="text" id="buyer-name" required placeholder="Ej. Carlos Mendoza" class="w-full bg-slate-900 border border-slate-700 focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1.5">Teléfono (WhatsApp) *</label>
+                            <input type="tel" id="buyer-phone" required placeholder="Ej. 04141234567" class="w-full bg-slate-900 border border-slate-700 focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 mb-1.5">Método de Pago Utilizado *</label>
+                            <select id="buyer-paymethod" class="w-full bg-slate-900 border border-slate-700 focus:border-emerald-500 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none">
+                                <option value="Pago Móvil BDV (0102)">Pago Móvil - Banco de Venezuela (0102)</option>
+                                <option value="Pago Móvil BNC (0191)">Pago Móvil - BNC (0191)</option>
+                                <option value="Efectivo (Dólares / Bs)">Efectivo (Dólares o Bolívares)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-center gap-3">
+                        <div>
+                            <p class="text-xs text-slate-400">Monto Total a Pagar:</p>
+                            <p id="checkout-total-bs" class="text-2xl font-black text-emerald-400">0 Bs.</p>
+                        </div>
+
+                        <button type="submit" id="btn-submit-purchase" disabled class="w-full sm:w-auto bg-slate-800 text-slate-500 cursor-not-allowed font-extrabold px-8 py-3.5 rounded-2xl text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-lg">
+                            <i class="fa-brands fa-whatsapp text-lg"></i> Confirmar y Tachar por WhatsApp
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- ================= VISTA ADMINISTRADOR ================= -->
+        <div id="tab-admin" class="tab-content">
+            
+            <!-- Resumen Financiero -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                <div class="bg-slate-950 border border-slate-800 p-5 rounded-2xl shadow-md flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-money-bill-wave"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 font-bold uppercase">Recaudado (Bs.)</p>
+                        <h4 id="stat-total-bs" class="text-xl font-black text-white">0 Bs.</h4>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-800 p-5 rounded-2xl shadow-md flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-ticket"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 font-bold uppercase">Boletos Vendidos</p>
+                        <h4 id="stat-sold-count" class="text-xl font-black text-white">0 / 100</h4>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950 border border-slate-800 p-5 rounded-2xl shadow-md flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-chart-pie"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400 font-bold uppercase">Porcentaje Vendido</p>
+                        <h4 id="stat-percentage" class="text-xl font-black text-white">0%</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de Participantes -->
+            <div class="bg-slate-950 border border-slate-800 rounded-3xl p-6 shadow-xl">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-users text-emerald-400"></i> Registro de Ventas y Compradores
+                    </h3>
+                    <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                        <input type="text" id="search-input" onkeyup="filterSalesTable()" placeholder="Buscar por número o nombre..." class="bg-slate-900 border border-slate-700 px-3.5 py-2 rounded-xl text-xs text-white outline-none flex-grow md:w-56">
+                        <button onclick="exportToCSV()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-excel"></i> Exportar
+                        </button>
+                        <button onclick="confirmResetRaffle()" class="bg-rose-600 hover:bg-rose-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-rotate-right"></i> Reiniciar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-2xl border border-slate-800">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-900 text-slate-300 font-bold uppercase tracking-wider border-b border-slate-800">
+                                <th class="p-3">Nº Ticket</th>
+                                <th class="p-3">Comprador</th>
+                                <th class="p-3">Teléfono</th>
+                                <th class="p-3">Método Pago</th>
+                                <th class="p-3">Fecha / Hora</th>
+                                <th class="p-3 text-center">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sales-table-body" class="divide-y divide-slate-800 text-slate-300">
+                            <!-- Filas dinámicas JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Pie de Página -->
+    <footer class="bg-slate-950 text-slate-500 py-6 border-t border-slate-800 text-center text-xs">
+        <p>© <span id="year"></span> Sorteo $50 en Efectivo • Pago Móvil BDV y BNC</p>
+    </footer>
+
+    <!-- Lógica JS -->
+    <script>
+        // Configuración Fija de la Rifa
+        const TICKET_PRICE_BS = 2000;
+        const TOTAL_NUMBERS = 100;
+        const ADMIN_PHONE = "04262884841";
+
+        // Estado Global
+        let sales = JSON.parse(localStorage.getItem('rifa_50usd_sales')) || {};
+        let selectedNumbers = [];
+
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        window.onload = function() {
+            renderNumbersGrid();
+            renderSalesTable();
+            calculateStats();
+        };
+
+        // Cambiar entre Pestañas
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-client-btn').className = "px-4 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-200 text-slate-400 hover:text-white";
+            document.getElementById('tab-admin-btn').className = "px-4 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-200 text-slate-400 hover:text-white";
+
+            if (tab === 'client') {
+                document.getElementById('tab-client').classList.add('active');
+                document.getElementById('tab-client-btn').className = "px-4 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-200 bg-amber-500 text-slate-950 shadow-md";
+            } else {
+                document.getElementById('tab-admin').classList.add('active');
+                document.getElementById('tab-admin-btn').className = "px-4 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-200 bg-amber-500 text-slate-950 shadow-md";
+            }
+        }
+
+        // Renderizar la Cuadrícula del 00 al 99
+        function renderNumbersGrid() {
+            const grid = document.getElementById('numbers-grid');
+            grid.innerHTML = '';
+            let freeCount = 0;
+
+            for (let i = 0; i < TOTAL_NUMBERS; i++) {
+                const numStr = i < 10 ? `0${i}` : `${i}`;
+                const saleData = sales[numStr];
+                const isSelected = selectedNumbers.includes(numStr);
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                let baseClasses = "number-btn h-12 sm:h-14 rounded-xl font-black text-sm sm:text-base border border-slate-800 shadow-sm flex items-center justify-center transition-all duration-150";
+
+                if (saleData) {
+                    // Vendido y Tachado
+                    btn.className = `${baseClasses} sold`;
+                    btn.title = `Vendido a: ${saleData.name}`;
+                    btn.onclick = () => showSaleInfo(numStr);
+                } else if (isSelected) {
+                    // Seleccionado por el usuario
+                    btn.className = `${baseClasses} selected`;
+                    btn.onclick = () => toggleSelectNumber(numStr);
+                    freeCount++;
+                } else {
+                    // Libre
+                    btn.className = `${baseClasses} bg-slate-900 text-slate-100 hover:border-emerald-500 hover:text-emerald-400`;
+                    btn.onclick = () => toggleSelectNumber(numStr);
+                    freeCount++;
+                }
+
+                btn.innerHTML = `<span>${numStr}</span>`;
+                grid.appendChild(btn);
+            }
+
+            document.getElementById('count-free').textContent = freeCount;
+            updateCheckoutPanel();
+        }
+
+        // Seleccionar o deseleccionar número
+        function toggleSelectNumber(numStr) {
+            if (sales[numStr]) return; // Si ya está vendido, no hace nada
+
+            const index = selectedNumbers.indexOf(numStr);
+            if (index > -1) {
+                selectedNumbers.splice(index, 1);
+            } else {
+                selectedNumbers.push(numStr);
+            }
+
+            renderNumbersGrid();
+        }
+
+        // Actualizar el Panel de Confirmación de Compra
+        function updateCheckoutPanel() {
+            const badge = document.getElementById('selected-numbers-badge');
+            const totalBsElem = document.getElementById('checkout-total-bs');
+            const btnSubmit = document.getElementById('btn-submit-purchase');
+
+            if (selectedNumbers.length === 0) {
+                badge.textContent = "Ningún número seleccionado";
+                badge.className = "bg-slate-800 text-slate-400 px-3 py-1 rounded-xl font-bold text-xs";
+                totalBsElem.textContent = "0 Bs.";
+                
+                btnSubmit.disabled = true;
+                btnSubmit.className = "w-full sm:w-auto bg-slate-800 text-slate-500 cursor-not-allowed font-extrabold px-8 py-3.5 rounded-2xl text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-lg";
+            } else {
+                badge.textContent = `Número(s): ${selectedNumbers.sort().join(', ')}`;
+                badge.className = "bg-amber-500 text-slate-950 px-3.5 py-1 rounded-xl font-black text-sm shadow-md";
+                
+                const totalBs = selectedNumbers.length * TICKET_PRICE_BS;
+                totalBsElem.textContent = `${totalBs.toLocaleString('es-VE')} Bs.`;
+
+                btnSubmit.disabled = false;
+                btnSubmit.className = "w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold px-8 py-3.5 rounded-2xl text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-xl hover:shadow-emerald-500/20";
+            }
+        }
+
+        // Copiar Datos de Pago Móvil al Portapapeles
+        function copyPaymentData(type) {
+            let textToCopy = "";
+            if (type === 'BDV') {
+                textToCopy = "Banco: 0102 (Banco de Venezuela)\nCedula: V-28308252\nTelefono: 04262884841";
+            } else if (type === 'BNC') {
+                textToCopy = "Banco: 0191 (Banco Nacional de Credito)\nCedula: V-28308252\nTelefono: 04262884841";
+            }
+
+            // Usando execCommand para máxima compatibilidad
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = textToCopy;
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+
+            showToast(`¡Datos de Pago Móvil (${type}) copiados!`);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = msg;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 2500);
+        }
+
+        // Procesar Compra y Tachar Automáticamente
+        function processPurchase(e) {
+            e.preventDefault();
+
+            if (selectedNumbers.length === 0) {
+                alert("Por favor selecciona al menos un número.");
+                return;
+            }
+
+            const name = document.getElementById('buyer-name').value.trim();
+            const phone = document.getElementById('buyer-phone').value.trim();
+            const payMethod = document.getElementById('buyer-paymethod').value;
+            const totalBs = selectedNumbers.length * TICKET_PRICE_BS;
+            const numbersListStr = selectedNumbers.sort().join(', ');
+
+            // Guardar y tachar automáticamente cada número seleccionado
+            selectedNumbers.forEach(num => {
+                sales[num] = {
+                    name: name,
+                    phone: phone,
+                    payMethod: payMethod,
+                    date: new Date().toLocaleString('es-VE')
+                };
+            });
+
+            // Guardar en Storage Local
+            localStorage.setItem('rifa_50usd_sales', JSON.stringify(sales));
+
+            // Preparar mensaje para WhatsApp
+            const message = `*¡HOLA! RESERVA DE RIFA DE 50$* 🎟️%0A%0A` +
+                `*Comprador:* ${name}%0A` +
+                `*Teléfono:* ${phone}%0A` +
+                `*Número(s) Seleccionado(s):* #${numbersListStr} (TACHADO AUTOMÁTICAMENTE)%0A` +
+                `*Método de Pago:* ${payMethod}%0A` +
+                `*Monto Total:* ${totalBs.toLocaleString('es-VE')} Bs.%0A%0A` +
+                `_Adjunto mi comprobante de pago por este medio para validar la reserva._`;
+
+            // Resetear estado
+            selectedNumbers = [];
+            document.getElementById('purchase-form').reset();
+            
+            renderNumbersGrid();
+            renderSalesTable();
+            calculateStats();
+
+            // Abrir WhatsApp directo
+            const waUrl = `https://wa.me/58${ADMIN_PHONE.substring(1)}?text=${message}`;
+            window.open(waUrl, '_blank');
+        }
+
+        // Información al presionar número vendido
+        function showSaleInfo(num) {
+            const sale = sales[num];
+            if (sale) {
+                alert(`Ticket #${num}\nComprador: ${sale.name}\nTeléfono: ${sale.phone}\nMétodo: ${sale.payMethod}\nFecha: ${sale.date}`);
+            }
+        }
+
+        // Renderizar Tabla del Admin
+        function renderSalesTable() {
+            const tbody = document.getElementById('sales-table-body');
+            tbody.innerHTML = '';
+
+            const keys = Object.keys(sales).sort((a,b) => parseInt(a) - parseInt(b));
+
+            if (keys.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center p-6 text-slate-500 italic">No hay números vendidos aún.</td></tr>`;
+                return;
+            }
+
+            keys.forEach(num => {
+                const item = sales[num];
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-900 transition border-b border-slate-800/60";
+
+                tr.innerHTML = `
+                    <td class="p-3 font-black text-amber-400 text-sm">#${num}</td>
+                    <td class="p-3 font-bold text-white">${item.name}</td>
+                    <td class="p-3 text-slate-400">${item.phone}</td>
+                    <td class="p-3 text-emerald-400 font-medium">${item.payMethod}</td>
+                    <td class="p-3 text-slate-500 text-[11px]">${item.date}</td>
+                    <td class="p-3 text-center">
+                        <button onclick="deleteSale('${num}')" title="Liberar Número" class="p-1.5 bg-rose-500/20 hover:bg-rose-500 text-rose-400 hover:text-white rounded-lg transition">
+                            <i class="fa-solid fa-trash"></i> Liberar
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Liberar Número
+        function deleteSale(num) {
+            if (confirm(`¿Liberar el número #${num}? Volverá a estar disponible.`)) {
+                delete sales[num];
+                localStorage.setItem('rifa_50usd_sales', JSON.stringify(sales));
+                renderNumbersGrid();
+                renderSalesTable();
+                calculateStats();
+            }
+        }
+
+        // Estadísticas Financieras
+        function calculateStats() {
+            const soldCount = Object.keys(sales).length;
+            const totalBs = soldCount * TICKET_PRICE_BS;
+            const percentage = ((soldCount / TOTAL_NUMBERS) * 100).toFixed(0);
+
+            document.getElementById('stat-total-bs').textContent = `${totalBs.toLocaleString('es-VE')} Bs.`;
+            document.getElementById('stat-sold-count').textContent = `${soldCount} / ${TOTAL_NUMBERS}`;
+            document.getElementById('stat-percentage').textContent = `${percentage}%`;
+        }
+
+        // Filtro
+        function filterSalesTable() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const rows = document.querySelectorAll('#sales-table-body tr');
+
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            });
+        }
+
+        // Exportar a CSV
+        function exportToCSV() {
+            const keys = Object.keys(sales);
+            if (keys.length === 0) {
+                alert('No hay registros para exportar.');
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Numero,Comprador,Telefono,MetodoPago,Fecha\n";
+
+            keys.forEach(num => {
+                const s = sales[num];
+                csvContent += `"${num}","${s.name}","${s.phone}","${s.payMethod}","${s.date}"\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `reporte_rifa_50usd.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Reiniciar
+        function confirmResetRaffle() {
+            if (confirm('⚠️ ¿Seguro que deseas reiniciar toda la rifa? Se borrarán todos los boletos comprados.')) {
+                sales = {};
+                localStorage.removeItem('rifa_50usd_sales');
+                renderNumbersGrid();
+                renderSalesTable();
+                calculateStats();
+                alert('La rifa ha sido reiniciada.');
+            }
+        }
+    </script>
+</body>
+</html>
+```<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
